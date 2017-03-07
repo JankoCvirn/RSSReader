@@ -1,0 +1,9 @@
+<resources>
+  <string name="app_name">RssReader</string>
+  <string name="title_no_net">Info</string>
+  <string name="no_net_message">Check your network connection.</string>
+  <string name="ok">Ok</string>
+  <string name="cancel">Cancel</string>
+  <string name="feed_name">feed name</string>
+  <string name="feed_url">url</string>
+</resources>

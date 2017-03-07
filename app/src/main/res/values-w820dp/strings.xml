@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="title_no_net">Info</string>
+  <string name="no_net_message">Check your network connection.</string>
+  <string name="ok">Ok</string>
+</resources>
