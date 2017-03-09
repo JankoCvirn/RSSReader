@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -33,36 +32,25 @@ import org.greenrobot.eventbus.ThreadMode;
  * Usage:
  */
 
-public class FeedsListFragment extends Fragment implements  AdapterView.OnItemClickListener {
+public class FeedsListFragment extends Fragment
+    implements AdapterView.OnItemClickListener, View.OnClickListener {
 
   private static final String TAG = "FEEDS";
+  public FeedAdapter feedAdapter;
   private List<Feed> feedList = new ArrayList<>();
   private RecyclerView recyclerView;
-  public FeedAdapter feedAdapter;
-
-
-  @Override public void onStart (){
-    super.onStart();
-    EventBus.getDefault().register(this);
-  }
-
-  @Override public void onStop (){
-    EventBus.getDefault().unregister(this);
-    super.onStop();
-  }
   @Override public void onAttach (Context context){
     super.onAttach(context);
 
     feedList = new Select().from(Feed.class).execute();
   }
-
   @Nullable @Override
   public View onCreateView (LayoutInflater inflater, @Nullable ViewGroup container,
       @Nullable Bundle savedInstanceState){
     View view = inflater.inflate(R.layout.fragment_feeds, null);
 
-    recyclerView = (RecyclerView) view.findViewById(R.id.recyclerContacts);
-    feedAdapter = new FeedAdapter(feedList,this, getContext());
+    recyclerView = (RecyclerView) view.findViewById(R.id.recyclerFeeds);
+    feedAdapter = new FeedAdapter(feedList, this, getContext());
 
     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
     recyclerView.setLayoutManager(layoutManager);
@@ -72,40 +60,59 @@ public class FeedsListFragment extends Fragment implements  AdapterView.OnItemCl
 
     recyclerView.setAdapter(feedAdapter);
 
+    view.findViewById(R.id.fab).setOnClickListener(this);
 
     return view;
   }
-
   @Override public void onViewCreated (View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
   }
-
-  private void reloadData (){
-    feedList.clear();
-    feedList = new Select().from(Feed.class).execute();
-    feedAdapter = new FeedAdapter(feedList,this, getContext());
-    recyclerView.setAdapter(feedAdapter);
+  @Override public void onStart (){
+    super.onStart();
+    EventBus.getDefault().register(this);
   }
-
+  @Override public void onStop (){
+    EventBus.getDefault().unregister(this);
+    super.onStop();
+  }
   @Subscribe(threadMode = ThreadMode.MAIN) public void onMessageEvent (FeedEvent event){
     reloadData();
     recyclerView.getAdapter().notifyDataSetChanged();
   }
-
+  private void reloadData (){
+    feedList.clear();
+    feedList = new Select().from(Feed.class).execute();
+    feedAdapter = new FeedAdapter(feedList, this, getContext());
+    recyclerView.setAdapter(feedAdapter);
+  }
   @Override public void onItemClick (AdapterView<?> adapterView, View view, int position, long l){
 
-    Log.d(TAG,"ON CLICK ========");
-    Feed feed=feedAdapter.getItem(position);
+    Log.d(TAG, "Clicked ========");
+    Feed feed = feedAdapter.getItem(position);
     Bundle bundle = new Bundle();
-    bundle.putString("url",feed.getFeedUrl());
+    bundle.putString("url", feed.getFeedUrl());
 
-    FeedsItemListFragment fragment2 = new FeedsItemListFragment();
-    fragment2.setArguments(bundle);
+    FeedsItemListFragment fragment = new FeedsItemListFragment();
+    fragment.setArguments(bundle);
 
-    getFragmentManager()
-        .beginTransaction()
-        .replace(R.id.flContent, fragment2)
+    getFragmentManager().beginTransaction()
+        .replace(R.id.flContent, fragment, "FEED_ITEMS")
+        .addToBackStack("tag2")
         .commit();
+  }
+  @Override public void onClick (View view){
+    switch(view.getId()){
 
+      case R.id.fab:
+
+        showDialogFragment();
+        break;
+    }
+  }
+
+  private void showDialogFragment (){
+
+    AddFeedDialogFragment addFeedDialogFragment = AddFeedDialogFragment.newInstance("New RSS");
+    addFeedDialogFragment.show(getActivity().getSupportFragmentManager(), "fragment_edit_name");
   }
 }

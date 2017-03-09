@@ -37,7 +37,7 @@ public class AddFeedDialogFragment extends DialogFragment {
   public AddFeedDialogFragment (){
   }
 
-  public static AddFeedDialogFragment newInstance(String title) {
+  public static AddFeedDialogFragment newInstance (String title){
     AddFeedDialogFragment frag = new AddFeedDialogFragment();
     Bundle args = new Bundle();
     args.putString("title", title);
@@ -45,28 +45,24 @@ public class AddFeedDialogFragment extends DialogFragment {
     return frag;
   }
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+  @Override public View onCreateView (LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState){
     return inflater.inflate(R.layout.fragment_dialog_add_feed, container);
   }
 
-  @Override
-  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+  @Override public void onViewCreated (View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
 
-    etFeedName = (EditText)view.findViewById(R.id.etFeedName);
-    etFeedUrl = (EditText)view.findViewById(R.id.etFeedUrl);
+    etFeedName = (EditText) view.findViewById(R.id.etFeedName);
+    etFeedUrl = (EditText) view.findViewById(R.id.etFeedUrl);
     btnAdd = (Button) view.findViewById(R.id.btnOk);
     btnCancel = (Button) view.findViewById(R.id.btnCancel);
-
 
     String title = getArguments().getString("title", "Enter Name");
     getDialog().setTitle(title);
 
     etFeedName.requestFocus();
-    getDialog().getWindow().setSoftInputMode(
-        WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
     btnCancel.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick (View view){
@@ -78,54 +74,42 @@ public class AddFeedDialogFragment extends DialogFragment {
     btnAdd.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick (View view){
 
-        if (isValidUrl(etFeedUrl.getEditableText().toString())&&isName(etFeedName.getEditableText().toString())){
+        if(isValidUrl(etFeedUrl.getEditableText().toString()) && isName(
+            etFeedName.getEditableText().toString())){
 
           saveRssFeed();
           close();
         }
-
       }
     });
   }
-
-  private boolean isValidUrl(String url) {
-    Pattern p = Patterns.WEB_URL;
-    Matcher m = p.matcher(url.toLowerCase());
-    return m.matches();
-  }
-
-  private boolean isName(String name) {
-
-    if (name.length()>0) return true;
-    else {
-      return false;
-    }
-
-  }
-
-  private void saveRssFeed(){
-
-    Feed feed=new Feed();
-    feed.setFeedName(etFeedName.getEditableText().toString());
-    feed.setFeedUrl(etFeedUrl.getEditableText().toString());
-    feed.save();
-    EventBus.getDefault().post(new FeedEvent("saved"));
-
-
-  }
-
-  private void close(){
+  private void close (){
 
     FragmentManager fm = getFragmentManager();
     FragmentTransaction ft = fm.beginTransaction();
     ft.remove(this);
     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
     ft.commit();
-
-
   }
+  private boolean isValidUrl (String url){
+    Pattern p = Patterns.WEB_URL;
+    Matcher m = p.matcher(url.toLowerCase());
+    return m.matches();
+  }
+  private boolean isName (String name){
 
+    if(name.length() > 0){
+      return true;
+    } else{
+      return false;
+    }
+  }
+  private void saveRssFeed (){
 
-
-
+    Feed feed = new Feed();
+    feed.setFeedName(etFeedName.getEditableText().toString());
+    feed.setFeedUrl(etFeedUrl.getEditableText().toString());
+    feed.save();
+    EventBus.getDefault().post(new FeedEvent("saved"));
+  }
 }

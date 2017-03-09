@@ -1,6 +1,8 @@
 package com.ursa_studio.rssreader.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,11 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.loopj.android.http.TextHttpResponseHandler;
-import com.ursa_studio.rssreader.MainActivity;
 import com.ursa_studio.rssreader.R;
-import com.ursa_studio.rssreader.adapter.FeedItemsAdapter;
+import com.ursa_studio.rssreader.adapter.FeedListAdapter;
 import com.ursa_studio.rssreader.model.FeedItem;
 import com.ursa_studio.rssreader.network.HttpClient;
 import com.ursa_studio.rssreader.parser.XMLParser;
@@ -44,11 +48,17 @@ public class FeedsItemListFragment extends Fragment implements AdapterView.OnIte
   private static final String KEY_TITLE = "title";
   private static final String KEY_DESCRIPTION = "description";
   private static final String KEY_LINK = "link";
+  private static final String KEY_IMAGE = "image";
+  private static final String KEY_URL = "url";
+  private static final String KEY_CHANNEL = "channel";
+  private static final String KEY_TITLE_SEC = "title";
+  public FeedListAdapter feedAdapter;
   private List<FeedItem> feedList = new ArrayList<>();
   private RecyclerView recyclerView;
-  public FeedItemsAdapter feedAdapter;
   private ImageView imageView;
   private String url;
+  private ProgressBar progressBar;
+  private TextView rssTitle;
 
   @Override public void onAttach (Context context){
     super.onAttach(context);
@@ -66,16 +76,18 @@ public class FeedsItemListFragment extends Fragment implements AdapterView.OnIte
 
     View view = inflater.inflate(R.layout.fragment_feed, null);
     imageView = (ImageView) view.findViewById(R.id.imageView);
-    recyclerView = (RecyclerView) view.findViewById(R.id.recyclerContacts);
-
+    recyclerView = (RecyclerView) view.findViewById(R.id.list);
+    progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+    rssTitle = (TextView) view.findViewById(R.id.textViewTitle);
 
     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
     recyclerView.setLayoutManager(layoutManager);
+    feedAdapter = new FeedListAdapter(feedList, this, getContext());
+
     recyclerView.setItemAnimator(new DefaultItemAnimator());
     recyclerView.addItemDecoration(
         new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
-
-    ((MainActivity) getActivity()).isFloatingButtonVisible(false);
+    recyclerView.setAdapter(feedAdapter);
 
     return view;
   }
@@ -83,38 +95,40 @@ public class FeedsItemListFragment extends Fragment implements AdapterView.OnIte
   @Override public void onViewCreated (View view, @Nullable Bundle savedInstanceState){
     super.onViewCreated(view, savedInstanceState);
 
+    reloadData();
     if(url != null){
 
       pullRssFeed(url);
     }
   }
+  private void reloadData (){
 
-  @Override public void onItemClick (AdapterView<?> adapterView, View view, int position, long l){
-
+    feedAdapter = new FeedListAdapter(feedList, this, getContext());
+    recyclerView.setAdapter(feedAdapter);
   }
-
   private void pullRssFeed (String url){
 
     HttpClient.get(url, null, new TextHttpResponseHandler() {
 
       @Override public void onStart (){
         super.onStart();
+        progressBar.setVisibility(View.VISIBLE);
+      }
+      @Override public void onFinish (){
+        super.onFinish();
+        progressBar.setVisibility(View.INVISIBLE);
       }
       @Override public void onFailure (int statusCode, Header[] headers, String responseString,
           Throwable throwable){
         Log.d(TAG, "Response NACK:" + responseString);
+        Toast.makeText(getContext(), getString(R.string.error_loading), Toast.LENGTH_SHORT).show();
       }
       @Override public void onSuccess (int statusCode, Header[] headers, String responseString){
         Log.d(TAG, "Response ACK:" + responseString);
         parseFeed(responseString);
       }
-
-      @Override public void onFinish (){
-        super.onFinish();
-      }
     });
   }
-
   private void parseFeed (String response){
 
     XMLParser xmlParser = new XMLParser();
@@ -132,21 +146,35 @@ public class FeedsItemListFragment extends Fragment implements AdapterView.OnIte
 
       feedList.add(feedItem);
     }
-    feedAdapter = new FeedItemsAdapter(feedList, getContext());
-    recyclerView.setAdapter(feedAdapter);
-    recyclerView.getAdapter().notifyDataSetChanged();
 
-    NodeList nl2 = document.getElementsByTagName("image");
+    NodeList nl2 = document.getElementsByTagName(KEY_IMAGE);
     Element e2 = (Element) nl2.item(0);
 
-    String url = xmlParser.getValue(e2, "url");
+    String url = xmlParser.getValue(e2, KEY_URL);
 
+    NodeList nl3 = document.getElementsByTagName(KEY_CHANNEL);
+    Element e3 = (Element) nl3.item(0);
+
+    String title = xmlParser.getValue(e3, KEY_TITLE_SEC);
+
+    rssTitle.setText(title);
+
+    reloadData();
 
     Glide.with(getContext())
         .load(url)
-        .asGif()
-        .placeholder(R.drawable.rss_logo_icon_png_312)
+        .asBitmap()
+        .placeholder(R.drawable.image_placeholder)
         .error(R.drawable.broken_link)
         .into(imageView);
+  }
+  @Override public void onItemClick (AdapterView<?> adapterView, View view, int position, long l){
+
+    FeedItem feedItem = feedAdapter.getItem(position);
+    Uri webpage = Uri.parse(feedItem.getLink());
+    Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+    if(intent.resolveActivity(getActivity().getPackageManager()) != null){
+      startActivity(intent);
+    }
   }
 }

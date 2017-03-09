@@ -2,7 +2,6 @@ package com.ursa_studio.rssreader.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +9,7 @@ import android.widget.AdapterView;
 import android.widget.TextView;
 import com.ursa_studio.rssreader.R;
 import com.ursa_studio.rssreader.model.Feed;
-import com.ursa_studio.rssreader.model.FeedEvent;
 import java.util.List;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
@@ -23,13 +18,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
   private Context context;
   private AdapterView.OnItemClickListener onItemClickListener;
 
-  public FeedAdapter (List<Feed> feedList, AdapterView.OnItemClickListener onItemClickListener, Context context){
+  public FeedAdapter (List<Feed> feedList, AdapterView.OnItemClickListener onItemClickListener,
+      Context context){
     this.feedList = feedList;
     this.context = context;
     this.onItemClickListener = onItemClickListener;
   }
-
-
 
   @Override public ViewHolder onCreateViewHolder (ViewGroup parent, int viewType){
     View itemView =
@@ -49,8 +43,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
   @Override public int getItemCount (){
     return feedList.size();
   }
+  public Feed getItem (int position){
 
-  public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    return feedList.get(position);
+  }
+
+  public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     public TextView feedName, feedUrl;
 
@@ -66,11 +64,4 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
       onItemClickListener.onItemClick(null, view, getAdapterPosition(), view.getId());
     }
   }
-
-  public Feed getItem(int position){
-
-    return feedList.get(position);
-  }
-
-
 }

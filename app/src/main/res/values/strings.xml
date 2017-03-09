@@ -6,4 +6,5 @@
   <string name="cancel">Cancel</string>
   <string name="feed_name">feed name</string>
   <string name="feed_url">url</string>
+  <string name="error_loading">Error loading RSS Feed!</string>
 </resources>
