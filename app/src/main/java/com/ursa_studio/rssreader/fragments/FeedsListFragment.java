@@ -7,7 +7,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -31,12 +33,13 @@ import org.greenrobot.eventbus.ThreadMode;
  * Usage:
  */
 
-public class FeedsListFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class FeedsListFragment extends Fragment implements  AdapterView.OnItemClickListener {
 
   private static final String TAG = "FEEDS";
   private List<Feed> feedList = new ArrayList<>();
   private RecyclerView recyclerView;
   public FeedAdapter feedAdapter;
+
 
   @Override public void onStart (){
     super.onStart();
@@ -59,7 +62,7 @@ public class FeedsListFragment extends Fragment implements AdapterView.OnItemCli
     View view = inflater.inflate(R.layout.fragment_feeds, null);
 
     recyclerView = (RecyclerView) view.findViewById(R.id.recyclerContacts);
-    feedAdapter = new FeedAdapter(feedList, getContext());
+    feedAdapter = new FeedAdapter(feedList,this, getContext());
 
     RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
     recyclerView.setLayoutManager(layoutManager);
@@ -68,6 +71,7 @@ public class FeedsListFragment extends Fragment implements AdapterView.OnItemCli
         new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
 
     recyclerView.setAdapter(feedAdapter);
+
 
     return view;
   }
@@ -79,7 +83,7 @@ public class FeedsListFragment extends Fragment implements AdapterView.OnItemCli
   private void reloadData (){
     feedList.clear();
     feedList = new Select().from(Feed.class).execute();
-    feedAdapter = new FeedAdapter(feedList, getContext());
+    feedAdapter = new FeedAdapter(feedList,this, getContext());
     recyclerView.setAdapter(feedAdapter);
   }
 
@@ -90,7 +94,18 @@ public class FeedsListFragment extends Fragment implements AdapterView.OnItemCli
 
   @Override public void onItemClick (AdapterView<?> adapterView, View view, int position, long l){
 
+    Log.d(TAG,"ON CLICK ========");
     Feed feed=feedAdapter.getItem(position);
+    Bundle bundle = new Bundle();
+    bundle.putString("url",feed.getFeedUrl());
+
+    FeedsItemListFragment fragment2 = new FeedsItemListFragment();
+    fragment2.setArguments(bundle);
+
+    getFragmentManager()
+        .beginTransaction()
+        .replace(R.id.flContent, fragment2)
+        .commit();
 
   }
 }

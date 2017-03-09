@@ -1,10 +1,8 @@
 package com.ursa_studio.rssreader;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -26,18 +24,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     findViewById(R.id.fab).setOnClickListener(this);
     showFeedsFragment();
+
   }
 
   private void showFeedsFragment (){
 
     Fragment fragment = new FeedsListFragment();
-    fragmentManager = getSupportFragmentManager ();
-    fragmentManager.beginTransaction ()
-        .replace (R.id.flContent, fragment)
-        .addToBackStack ("tag")
-        .commit ();
-
-
+    fragmentManager = getSupportFragmentManager();
+    fragmentManager.beginTransaction()
+        .replace(R.id.flContent, fragment)
+        .addToBackStack("tag")
+        .commit();
   }
 
   private void showDialogFragment (){
@@ -46,9 +43,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     AddFeedDialogFragment addFeedDialogFragment = AddFeedDialogFragment.newInstance("New RSS");
     addFeedDialogFragment.show(fm, "fragment_edit_name");
   }
-
-
-
 
   @Override public void onClick (View view){
 
@@ -62,12 +56,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   }
 
   @Override public void onBackPressed (){
+
     super.onBackPressed();
+
+    showFeedsFragment();
+    isFloatingButtonVisible(true);
   }
 
-  @Override protected void onResume () {
-    super.onRestart ();
-    showFeedsFragment();
+  public void isFloatingButtonVisible (boolean isVisible){
 
+    if(isVisible){
+      findViewById(R.id.fab).setVisibility(View.VISIBLE);
+    } else{
+      findViewById(R.id.fab).setVisibility(View.GONE);
+    }
   }
 }
